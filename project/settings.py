@@ -44,13 +44,22 @@ DEBUG = config.get('DEBUG', True)
 TEMPLATE_DEBUG = DEBUG
 
 if DEBUG:
-    CACHE_BACKEND = 'dummy://'
-    CACHE_MIDDLEWARE_SECONDS = 0
+    CACHES = {
+        "default": {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            'MIDDLEWARE_SECONDS': 0,
+        }
+    }
 else:
-    CACHE_BACKEND = 'memcached://127.0.0.1:11211/?timeout=86400'
-    CACHE_MIDDLEWARE_SECONDS = 86400
-    CACHE_MIDDLEWARE_KEY_PREFIX = config.get('MAPIT_DB_NAME')
-    CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
+    CACHES = {
+        "default": {    
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': '127.0.0.1:11211',
+            'MIDDLEWARE_SECONDS': 86400,
+            'MIDDLEWARE_KEY_PREFIX': config.get('MAPIT_DB_NAME'),
+            'MIDDLEWARE_ANONYMOUS_ONLY': True,
+        }
+    }
 
 if config.get('BUGS_EMAIL'):
     SERVER_EMAIL = config['BUGS_EMAIL']
