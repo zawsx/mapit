@@ -2,6 +2,7 @@ import os
 import sys
 import yaml
 import django
+import warnings
 
 # Make sure the application in this repository is on the path
 package_dir = os.path.abspath(os.path.realpath(os.path.dirname(__file__)))
@@ -42,6 +43,12 @@ GOOGLE_ANALYTICS = config.get('GOOGLE_ANALYTICS', '')
 
 DEBUG = config.get('DEBUG', True)
 TEMPLATE_DEBUG = DEBUG
+
+# If we are in debug mode make sure that deprecation warnings are produced (off
+# by default in Python 2.7). This may prove unworkable if too many warning end
+# up being produced by code we don't control.
+if DEBUG:
+    warnings.simplefilter('default')
 
 if DEBUG:
     CACHES = {
