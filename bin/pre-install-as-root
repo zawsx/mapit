@@ -184,8 +184,6 @@ install_postgis() {
     su -l -c "curl '$POSTGIS_SCRIPT' | bash -s" postgres
 }
 
-
-
 add_website_to_nginx() {
     NGINX_SITE="$HOST"
     if [ $DEFAULT_SERVER = true ]
