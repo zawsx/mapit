@@ -253,7 +253,7 @@ clone_or_update_repository $REPOSITORY
 
 chown -R "$UNIX_USER"."$UNIX_USER" "$DIRECTORY"
 
-sudo apt-get install -y python-flup gunicorn
+apt-get install -y python-flup gunicorn
 
 install_nginx
 
