@@ -14,6 +14,8 @@
 set -e
 set -x
 
+SITE=mapit
+
 DEFAULT_SERVER=false
 if [ x"$1" = x"--default" ]
 then
@@ -54,13 +56,13 @@ UNIX_USER="$1"
 
 if [ $DEFAULT_SERVER = true ]
 then
-    DIRECTORY="/var/www/mapit"
+    DIRECTORY="/var/www/$SITE"
 else
     DIRECTORY="/var/www/$HOST"
 fi
-REPOSITORY="$DIRECTORY/mapit"
+REPOSITORY="$DIRECTORY/$SITE"
 
-REPOSITORY_URL=git://github.com/mysociety/mapit.git
+REPOSITORY_URL=git://github.com/mysociety/$SITE.git
 BRANCH=install-script
 
 IP_ADDRESS_FOR_HOST="$(dig +short $HOST)"
@@ -193,7 +195,7 @@ add_website_to_nginx() {
     SITE_FILENAME=/etc/nginx/sites-available/"$NGINX_SITE"
     SITE_LINK=/etc/nginx/sites-enabled/"$NGINX_SITE"
     cp $REPOSITORY/conf/nginx.conf.example $SITE_FILENAME
-    sed -i "s,/var/www/mapit,$DIRECTORY," $SITE_FILENAME
+    sed -i "s,/var/www/$SITE,$DIRECTORY," $SITE_FILENAME
     if [ $DEFAULT_SERVER = false ]
     then
         sed -i 's/listen 80/# listen 80/' $SITE_FILENAME
@@ -211,7 +213,7 @@ add_website_to_nginx() {
 install_sysvinit_script() {
     SYSVINIT_FILENAME=/etc/init.d/$SITE
     cp $REPOSITORY/conf/sysvinit.example $SYSVINIT_FILENAME
-    sed -i "s,/var/www/mapit,$DIRECTORY,g" $SYSVINIT_FILENAME
+    sed -i "s,/var/www/$SITE,$DIRECTORY,g" $SYSVINIT_FILENAME
     sed -i "s/^ *USER=.*/USER=$UNIX_USER/" $SYSVINIT_FILENAME
     chmod a+rx $SYSVINIT_FILENAME
     update-rc.d fms-catalyst-fastcgi start 20 2 3 4 5 . stop 20 0 1 6 .
