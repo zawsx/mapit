@@ -36,7 +36,7 @@ add_postgresql_user
 
 make_log_directory
 
-su -l -c "$REPOSITORY/bin/install-as-user $DEFAULT_PARAMETER '$UNIX_USER' '$HOST'" "$UNIX_USER"
+su -l -c "$REPOSITORY/bin/install-as-user $DEFAULT_PARAMETER '$UNIX_USER' '$HOST' '$DIRECTORY'" "$UNIX_USER"
 
 install_sysvinit_script
 
