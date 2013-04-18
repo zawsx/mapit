@@ -5,6 +5,8 @@ from south.v2 import DataMigration
 from django.db import models
 from django.conf import settings
 
+from django.contrib.gis.geos import MultiPolygon
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -12,11 +14,39 @@ class Migration(DataMigration):
             g.areas.add( g.area )
             g.save()
 
-
     def backwards(self, orm):
-        for g in orm.Geometry.objects.all().iterator():
-            g.area = g.areas.all()[0]
-            g.save()
+        # Going backwards, we're moving from the situation where a
+        # geometry can be in multiple areas, to only being in a single
+        # area.  Please note that this isn't guaranteed to recreate
+        # exactly the same areas and geometries after going forwards
+        # and backwards through this migration, but for most purposes
+        # it'll be functionally the same.
+        for a in orm.Area.objects.all():
+            # Find any Geometry where area was set to this area, and
+            # set its area to NULL.  This won't be necessary if you've
+            # just migrated backwards through 0007, but there might be
+            # some if you've just migrated forward to 0006:
+            a.polygons.clear()
+            # We want to duplicate every geometry associated with the
+            # area, and set this area on it - we duplicate them
+            # because any given geometry might be associated with
+            # other areas too.
+            polygons_to_duplicate = [g.polygon for g in a.geometries.all()]
+            # However, it's quite possible that these geometries are
+            # adjacent, so do a cascaded union of them to simplify the
+            # number of polygons used.  (Unfortunately, we can't just
+            # do unionagg on the query set, because with South's
+            # unfrozen models it's a QuerySet, not a GeoQuerySet.)
+            mp = MultiPolygon(polygons_to_duplicate)
+            unioned = mp.cascaded_union
+            if unioned.geom_type == 'Polygon':
+                unioned = [unioned]
+            for polygon in unioned:
+                a.polygons.create(polygon=polygon)
+        # Now remove any geometries that have area_id set to NULL -
+        # these will be those only associated with areas via the old
+        # join table.
+        orm.Geometry.objects.filter(area=None).delete()
 
     models = {
         'mapit.area': {
