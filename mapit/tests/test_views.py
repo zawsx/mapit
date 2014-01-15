@@ -1,10 +1,12 @@
 import json
 
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.contrib.gis.geos import Polygon
 
 from mapit.models import Type, Area, Geometry, Generation
 
+@override_settings({'AREA_SRID': 4326})
 class AreaViewsTest(TestCase):
     @classmethod
     def setUpClass(self):
@@ -17,7 +19,7 @@ class AreaViewsTest(TestCase):
             code="BIG",
             description="A large test area",
             )
-        
+
         self.small_type = Type.objects.create(
             code="SML",
             description="A small test area",
